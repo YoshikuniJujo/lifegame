@@ -1,5 +1,3 @@
-{-# LANGUAGE TupleSections #-}
-
 import Prelude hiding (readFile)
 import System.IO.Strict (readFile)
 
@@ -27,7 +25,7 @@ triples d = tpl d
 	where
 	tpl p (c : fs@(f : _)) = (p, c, f) : tpl c fs
 	tpl p [c] = [(p, c, d)]
-	tpl _ _ = []
+	tpl _ [] = []
 
 nbs :: (a, [a]) -> (a, [a]) -> (a, [a]) -> [(a, [a])]
 nbs (tl, t : ts@(tr : _)) (l, h : hs@(r : _)) (bl, b : bs@(br : _)) =
@@ -36,10 +34,10 @@ nbs (tl, t : _) (l, h : _) (bl, b :_) = [(h, [tl, t, l, bl, b])]
 nbs _ _ _ = []
 
 neighbors :: a -> [[a]] -> [[(a, [a])]]
-neighbors d = map (uncurry3 nbs) . triples (d, repeat d) . map (d ,)
+neighbors d = map (uncurry3 nbs) . triples (d, repeat d) . map ((,) d)
 
-type Count = [[(Bool, Int)]]
 type Neighbors = [[(Bool, [Bool])]]
+type Count = [[(Bool, Int)]]
 
 count :: Neighbors -> Count
 count = map . map . second $ length . filter id
@@ -54,7 +52,7 @@ main :: IO ()
 main = do
 	args <- getArgs
 	case args of
-		fp : n : _ -> do
+		[fp, n] -> do
 			b0 <- readBoard . lines <$> readFile fp
 			for_ (read n `take` game b0) $ \b -> do
 				putStrLn . unlines $ showBoard b
